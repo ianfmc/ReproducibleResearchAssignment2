@@ -1,5 +1,5 @@
 ---
-title: "Analysis of the Health and Economic Impacts of Weather Events"
+title: "Analysis of the Health and Economic Impacts of Weather Events in the US: 1950-2011"
 author: "Ian F. McCallum"
 date: "October 26, 2014"
 output: html_document
@@ -7,7 +7,7 @@ output: html_document
 
 ## Synopsis
 
-In this report, we seek to find the relationship between Weather Events and Fatalities, and Property Damage in an effort to provide planning guidance for Severe Weather events. The analysis established the top 10 most lethal and destructive events, as well as the relationship between those, in order to identify the most effective allocation of resources.
+In this analysis, we seek to find the relationship between Weather Events and Fatalities, and Property Damage in an effort to provide planning guidance for Severe Weather events. The analysis established the top 10 most lethal and destructive events, as well as the relationship between those, in order to identify the most effective allocation of resources.
 
 The data is available for [download](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2). In addition, documentation is available from the [NOAA Website](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf).
 
@@ -33,13 +33,12 @@ data.processing.do <- function(location) {
 }
 
 data.processing.read <- function(location) {  
-  zipped.file.name <- "repdata-data-StormData.csv.bz2"  
-  if (!file.exists(zipped.file.name)) {
-    
-    download(location, zipped.file, quiet=FALSE)          
+  z <- "repdata-data-StormData.csv.bz2"  
+  if (!file.exists(z)) {    
+    download(location, z, quiet=TRUE)          
     }   
-  bz.con <- bzfile(zipped.file.name)
-  data <- read.csv(bz.con, nrows=300000)
+  bz.con <- bzfile(z)
+  data <- read.csv(bz.con,nrows=-1)
   
   return(data)
   }
@@ -53,29 +52,21 @@ data.processing.get.year <- function(date) {
   }
 ```
 
-After reading the data, a quick check of the number of rows confirms that more than 900,000 items were read.
+To examine the quality of the data, a statistical summary is provided for the *FATALITIES* and *PROPDMG* columns are provided
 
-```{r number.of.rows}
-nrow(wx.data)
-```
-
-To ensure the quality of the data, a statistical summary is provided for the *FATALITIES* and *PROPDMG* columns are provided
-
-<br>
 ```{r fatalities.summary}
 summary(wx.data$FATALITIES)
 ```
 
-<br>
 ```{r damage.summary}
 summary(wx.data$PROPDMG)
 ```
 
-### Results
+## Results
 
 The first investigation is to determine the 10 most lethal and destructive weather events. First the data is totaled for both *fatalities* and *property damage* for all events. 
 
-```{r data.summary}
+```{r data.analysis}
 
 wx.summaries <- analysis.do(wx.data)
 
@@ -85,8 +76,8 @@ analysis.do <- function(wx.df) {
 
   impact <- cbind(fatalities, damage)
   impact[, 3] <- NULL
-  
   colnames(impact) <- c("Event", "Total.Fatalities", "Total.Damage")
+
   return(impact)
   }
 
@@ -95,9 +86,9 @@ analysis.cross.tab <- function(wx.summ) {
   sort.by.fatalities <- sort.by.fatalities[1:10, ]
   
   sort.by.damage <- wx.summ[order(wx.summ$Total.Damage, decreasing=TRUE), ]
-  sort.by.damage <- sort.by.damage[1:10, ]
-  
+  sort.by.damage <- sort.by.damage[1:10, ]  
   cross.tab <- merge(sort.by.damage, sort.by.fatalities)
+  
   return(cross.tab)
   }
 
@@ -130,11 +121,11 @@ print(d[1:10,])
 
 ### Plot of Fatalities and Damage
 
-But given the paucity of funding to prepare for future potential disasters, it will be important to see if there are events that are both lethal and destructive. The final analysis seeks to determine which events are common to both lists.
+But, given the paucity of funding to prepare for future potential disasters, it will be important to see if there are events that are both lethal and destructive. The final analysis seeks to determine which events are common to both lists.
 
 ```{r analysis.plot}
 x <- analysis.cross.tab(wx.summaries)
-analysis.plot(x)
+analysis.plot(x,"Plot of Fatalities versus Destruction\nCaused by Weather Events")
 ```
 
 This data could also be used to determine, more precisely on a state by state basis, where to best allocate resources. The graphic shows that Tornados are the most deadly and costly. Other events that should be planned for include:
@@ -144,7 +135,7 @@ This data could also be used to determine, more precisely on a state by state ba
 - Flooding
 - Lightning
 
-### Summary
+## Summary
 
 The analysis has shown that **Tornados are, by a wide margin, the most lethal AND destructive** weather events. Planning and resouce allocation should address Tornados first and foremost.
 
