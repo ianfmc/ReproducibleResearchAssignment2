@@ -11,11 +11,9 @@ assignment2 <- function() {
   
   x <- analysis.cross.tabulate(wx.summaries)
   
-  print("Top 10 most lethal:")
   f <- wx.summaries[order(wx.summaries$Total.Fatalities, decreasing=TRUE), c(1,2)]
   print(f[1:10,])
   
-  print("Top 10 most destructive:")
   d <- wx.summaries[order(wx.summaries$Total.Damage, decreasing=TRUE), c(1,3)]
   print(d[1:10,])
   
@@ -36,12 +34,11 @@ data.processing.do <- function(location) {
 data.processing.read <- function(location) {
   
   zipped.file.name <- "repdata-data-StormData.csv.bz2"  
-  if (!file.exists(zipped.file.name)) {
-    
-    download(location, zipped.file, quiet=FALSE)          
+  if (!file.exists(zipped.file.name)) {    
+    download(location, zipped.file.name, quiet=FALSE)          
   }   
   bz.con <- bzfile(zipped.file.name)
-  data <- read.csv(bz.con, nrows=200000) ## be sure to change this before final
+  data <- read.csv(bz.con, nrows=400000) ## be sure to change this before final
   
   return(data)
 }
