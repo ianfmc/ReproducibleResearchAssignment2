@@ -1,0 +1,150 @@
+---
+title: "Analysis of the Health and Economic Impacts of Weather Events"
+author: "Ian F. McCallum"
+date: "October 26, 2014"
+output: html_document
+---
+
+## Synopsis
+
+In this report, we seek to find the relationship between Weather Events and Fatalities, and Property Damage in an effort to provide planning guidance for Severe Weather events. The analysis established the top 10 most lethal and destructive events, as well as the relationship between those, in order to identify the most effective allocation of resources.
+
+The data is available for [download](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2). In addition, documentation is available from the [NOAA Website](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf).
+
+## Data Processing
+### Reading the Data
+
+The data is available as a bz2 archived comma-separated values file. Because the data requires a secure HTTP connection, the **download** package is a requirement. The elements of the *BGN_DATA* column in the **wx.data* data frame is converted to a Date object, from which the year of the weather event is extracted and added to the data frame.
+
+```{r data.processing}
+library("downloader")
+library("plyr")
+library("ggplot2")
+
+data.URL <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+wx.data <- data.processing.do(data.URL)
+
+data.processing.do <- function(location) {
+  data <- data.processing.read(location)
+  data$BGN_DATE <- data.processing.convert.dates(data$BGN_DATE)
+  data <- transform(data, YEAR = data.processing.get.year(data$BGN_DATE))
+  
+  return(data)
+}
+
+data.processing.read <- function(location) {  
+  zipped.file.name <- "repdata-data-StormData.csv.bz2"  
+  if (!file.exists(zipped.file.name)) {
+    
+    download(location, zipped.file, quiet=FALSE)          
+    }   
+  bz.con <- bzfile(zipped.file.name)
+  data <- read.csv(bz.con, nrows=300000)
+  
+  return(data)
+  }
+
+data.processing.convert.dates <- function(dates) {
+  return (as.Date(dates, "%m/%d/%Y"))
+  }
+
+data.processing.get.year <- function(date) {
+  return(as.numeric(format(date, format="%Y")))
+  }
+```
+
+After reading the data, a quick check of the number of rows confirms that more than 900,000 items were read.
+
+```{r number.of.rows}
+nrow(wx.data)
+```
+
+To ensure the quality of the data, a statistical summary is provided for the *FATALITIES* and *PROPDMG* columns are provided
+
+<br>
+```{r fatalities.summary}
+summary(wx.data$FATALITIES)
+```
+
+<br>
+```{r damage.summary}
+summary(wx.data$PROPDMG)
+```
+
+### Results
+
+The first investigation is to determine the 10 most lethal and destructive weather events. First the data is totaled for both *fatalities* and *property damage* for all events. 
+
+```{r data.summary}
+
+wx.summaries <- analysis.do(wx.data)
+
+analysis.do <- function(wx.df) {
+  fatalities <- ddply(wx.df, .(EVTYPE), summarise, total=sum(FATALITIES, na.rm=TRUE))
+  damage <- ddply(wx.df, .(EVTYPE), summarise, total=sum(PROPDMG, na.rm=TRUE))
+
+  impact <- cbind(fatalities, damage)
+  impact[, 3] <- NULL
+  
+  colnames(impact) <- c("Event", "Total.Fatalities", "Total.Damage")
+  return(impact)
+  }
+
+analysis.cross.tab <- function(wx.summ) {
+  sort.by.fatalities <- wx.summ[order(wx.summ$Total.Fatalities, decreasing=TRUE), ]
+  sort.by.fatalities <- sort.by.fatalities[1:10, ]
+  
+  sort.by.damage <- wx.summ[order(wx.summ$Total.Damage, decreasing=TRUE), ]
+  sort.by.damage <- sort.by.damage[1:10, ]
+  
+  cross.tab <- merge(sort.by.damage, sort.by.fatalities)
+  return(cross.tab)
+  }
+
+analysis.plot <- function(data, t="Analysis") {
+  p <- ggplot(data, aes(x=Total.Fatalities, y=(Total.Damage/1000), color=Event))
+  p <- p + geom_point(size=6)
+  p <- p + xlab("Total Fatalities")
+  p <- p + ylab("Total Damage (in $1,000s)")
+  p <- p + ggtitle(t)
+  
+  print(p)
+  }
+```
+
+### Top 10 Most Lethal and Destructive
+
+The 10 most lethal event are listed below:
+<br>
+```{r most.lethal}
+f <- wx.summaries[order(wx.summaries$Total.Fatalities, decreasing=TRUE), c(1,2)]
+print(f[1:10,])
+```
+
+And the 10 most destructive events are:
+<br>
+```{r most.destructive}
+d <- wx.summaries[order(wx.summaries$Total.Damage, decreasing=TRUE), c(1,3)]
+print(d[1:10,])
+```
+
+### Plot of Fatalities and Damage
+
+But given the paucity of funding to prepare for future potential disasters, it will be important to see if there are events that are both lethal and destructive. The final analysis seeks to determine which events are common to both lists.
+
+```{r analysis.plot}
+x <- analysis.cross.tab(wx.summaries)
+analysis.plot(x)
+```
+
+This data could also be used to determine, more precisely on a state by state basis, where to best allocate resources. The graphic shows that Tornados are the most deadly and costly. Other events that should be planned for include:
+
+- Thunderstorm Winds
+- Flash Flooding
+- Flooding
+- Lightning
+
+### Summary
+
+The analysis has shown that **Tornados are, by a wide margin, the most lethal AND destructive** weather events. Planning and resouce allocation should address Tornados first and foremost.
+
