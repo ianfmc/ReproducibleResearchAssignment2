@@ -139,3 +139,8 @@ This data could also be used to determine, more precisely on a state by state ba
 
 The analysis has shown that **Tornados are, by a wide margin, the most lethal AND destructive** weather events. Planning and resouce allocation should address Tornados first and foremost.
 
+## Appendix
+
+```{r Appendix}
+sessionInfo()
+```
