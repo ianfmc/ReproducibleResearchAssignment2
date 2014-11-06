@@ -57,11 +57,11 @@ data.processing.get.year <- function(date) {
 To examine the quality of the data, a statistical summary is provided for the *FATALITIES* and *PROPDMG* columns are provided
 
 ```{r fatalities.summary}
-summary(wx.data$FATALITIES)
+summary(wx.data$Total.Health.Impact)
 ```
 
 ```{r damage.summary}
-summary(wx.data$PROPDMG)
+summary(wx.data$Total.Economic.Impact)
 ```
 
 ## Results
