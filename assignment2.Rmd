@@ -28,6 +28,8 @@ data.processing.do <- function(location) {
   data <- data.processing.read(location)
   data$BGN_DATE <- data.processing.convert.dates(data$BGN_DATE)
   data <- transform(data, YEAR = data.processing.get.year(data$BGN_DATE))
+  data <- transform(data, Total.Health.Impact = (data$FATALITIES + data$INJURIES))
+  data <- transform(data, Total.Economic.Impact = (data$PROPDMG + data$CROPDMG))
   
   return(data)
 }
