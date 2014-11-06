@@ -26,7 +26,9 @@ data.processing.do <- function(location) {
   data <- data.processing.read(location)
   data$BGN_DATE <- data.processing.convert.dates(data$BGN_DATE)
   data <- transform(data, YEAR = data.processing.get.year(data$BGN_DATE))
-
+  data <- transform(data, Total.Health.Impact = (data$FATALITIES + data$INJURIES))
+  data <- transform(data, Total.Economic.Impact = (data$PROPDMG + data$CROPDMG))
+  
   return(data)
 }
 
@@ -36,7 +38,7 @@ data.processing.read <- function(location) {
     download(location, zipped.file.name, quiet=FALSE)          
   }   
   bz.con <- bzfile(zipped.file.name)
-  data <- read.csv(bz.con) ## be sure to change this before final
+  data <- read.csv(bz.con, nrow=10000) ## be sure to change this before final
   
   return(data)
 }
