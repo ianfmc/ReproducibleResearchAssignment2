@@ -28,6 +28,8 @@ data.processing.do <- function(location) {
   data <- data.processing.read(location)
   data$BGN_DATE <- data.processing.convert.dates(data$BGN_DATE)
   data <- transform(data, YEAR = data.processing.get.year(data$BGN_DATE))
+  data <- transform(data, Total.Health.Impact = (data$FATALITIES + data$INJURIES))
+  data <- transform(data, Total.Economic.Impact = (data$PROPDMG + data$CROPDMG))
   
   return(data)
 }
@@ -55,11 +57,11 @@ data.processing.get.year <- function(date) {
 To examine the quality of the data, a statistical summary is provided for the *FATALITIES* and *PROPDMG* columns are provided
 
 ```{r fatalities.summary}
-summary(wx.data$FATALITIES)
+summary(wx.data$Total.Health.Impact)
 ```
 
 ```{r damage.summary}
-summary(wx.data$PROPDMG)
+summary(wx.data$Total.Economic.Impact)
 ```
 
 ## Results
